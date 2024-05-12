@@ -1,7 +1,6 @@
 package com.martynov.spring.security
 
 import com.auth0.jwt.exceptions.JWTVerificationException
-import com.martynov.spring.util.TokenHasExpiredException
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.security.authentication.ReactiveAuthenticationManager
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
@@ -24,7 +23,7 @@ class JwtAuthenticationManager @Autowired constructor(
             val authorities = extractAuthorities()
             Mono.just(UsernamePasswordAuthenticationToken(username, null, authorities))
         } catch (ex: JWTVerificationException) {
-            throw TokenHasExpiredException(ex.message.toString())
+            Mono.error(ex)
         }
     }
 

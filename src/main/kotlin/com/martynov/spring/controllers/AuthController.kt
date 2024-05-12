@@ -41,15 +41,11 @@ class AuthController @Autowired constructor(
             authenticationDto.username, authenticationDto.password
         )
         try {
-            authenticationManager.authenticate(authInputToken).awaitSingleOrNull()
+            authenticationManager.authenticate(authInputToken)
         } catch (e: BadCredentialsException) {
             return java.util.Map.of("message", "incorrect credentials")
         }
         val token: String = jwtUtil.generateToken(authenticationDto.username)
         return java.util.Map.of("jwt_token", token)
-    }
-    @ExceptionHandler(RuntimeException::class)
-    fun except(e : RuntimeException) : String? {
-        return e.message
     }
 }
