@@ -1,4 +1,4 @@
-package com.martynov.spring.config
+package com.martynov.spring.security
 
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm

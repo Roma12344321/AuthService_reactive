@@ -1,4 +1,4 @@
-package com.martynov.spring.config
+package com.martynov.spring.security
 
 import com.martynov.spring.models.Person
 import org.springframework.security.core.GrantedAuthority

@@ -1,16 +1,17 @@
 package com.martynov.spring.controllers
 
-import com.martynov.spring.config.JWTUtil
-import com.martynov.spring.config.JwtAuthenticationManager
+import com.auth0.jwt.exceptions.JWTVerificationException
+import com.martynov.spring.security.JWTUtil
+import com.martynov.spring.security.JwtAuthenticationManager
 import com.martynov.spring.dto.AuthenticationDto
 import com.martynov.spring.models.Person
 import com.martynov.spring.services.RegistrationService
-import jakarta.validation.Valid
+import kotlinx.coroutines.reactor.awaitSingle
+import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.security.authentication.BadCredentialsException
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
-import org.springframework.stereotype.Controller
-import org.springframework.validation.BindingResult
+import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
@@ -30,7 +31,7 @@ class AuthController @Autowired constructor(
         @RequestBody person: Person?,
     ): Map<String, String> {
         registrationService.register(person ?: throw RuntimeException())
-        val token: String = jwtUtil.generateToken(person.username)
+        val token = jwtUtil.generateToken(person.username)
         return java.util.Map.of("jwt_token", token)
     }
 
@@ -40,11 +41,15 @@ class AuthController @Autowired constructor(
             authenticationDto.username, authenticationDto.password
         )
         try {
-            authenticationManager.authenticate(authInputToken)
+            authenticationManager.authenticate(authInputToken).awaitSingleOrNull()
         } catch (e: BadCredentialsException) {
             return java.util.Map.of("message", "incorrect credentials")
         }
         val token: String = jwtUtil.generateToken(authenticationDto.username)
         return java.util.Map.of("jwt_token", token)
+    }
+    @ExceptionHandler(RuntimeException::class)
+    fun except(e : RuntimeException) : String? {
+        return e.message
     }
 }

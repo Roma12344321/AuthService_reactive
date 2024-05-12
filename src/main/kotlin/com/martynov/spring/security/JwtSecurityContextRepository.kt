@@ -1,4 +1,4 @@
-package com.martynov.spring.config
+package com.martynov.spring.security
 
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
@@ -18,7 +18,7 @@ class JwtSecurityContextRepository @Autowired constructor(
         val token = exchange.request.headers.getFirst("Authorization")?.substringAfter("Bearer ")
         return if (token != null) {
             val auth = UsernamePasswordAuthenticationToken(token, token)
-            this.authenticationManager.authenticate(auth).map { authentication ->
+            authenticationManager.authenticate(auth).map { authentication ->
                 SecurityContextImpl(authentication)
             }
         } else {

@@ -1,6 +1,6 @@
 package com.martynov.spring.services
 
-import com.martynov.spring.config.PersonDetails
+import com.martynov.spring.security.PersonDetails
 import com.martynov.spring.repositories.PersonRepository
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.security.core.userdetails.ReactiveUserDetailsService

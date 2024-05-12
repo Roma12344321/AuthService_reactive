@@ -1,5 +1,7 @@
 package com.martynov.spring.config
 
+import com.martynov.spring.security.JwtAuthenticationManager
+import com.martynov.spring.security.JwtSecurityContextRepository
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity
@@ -29,10 +31,8 @@ class SecurityConfig {
             .securityContextRepository(jwtSecurityContextRepository)
             .authorizeExchange {
                 it.pathMatchers("/auth/**").permitAll()
-                it.pathMatchers("/hello").hasAnyRole("USER","ADMIN")
+                it.anyExchange().hasAnyRole("USER","ADMIN")
             }
-
-
         return http.build()
     }
 }
