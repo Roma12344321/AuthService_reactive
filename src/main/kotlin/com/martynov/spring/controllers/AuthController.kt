@@ -5,12 +5,14 @@ import com.martynov.spring.security.JWTUtil
 import com.martynov.spring.security.JwtAuthenticationManager
 import com.martynov.spring.dto.AuthenticationDto
 import com.martynov.spring.models.Person
+import com.martynov.spring.services.PersonDetailService
 import com.martynov.spring.services.RegistrationService
 import kotlinx.coroutines.reactor.awaitSingle
 import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.security.authentication.BadCredentialsException
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
+import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
@@ -22,7 +24,9 @@ import org.springframework.web.bind.annotation.RestController
 class AuthController @Autowired constructor(
     private val registrationService: RegistrationService,
     private val jwtUtil: JWTUtil,
-    private val authenticationManager: JwtAuthenticationManager
+    private val authenticationManager: JwtAuthenticationManager,
+    private val passwordEncoder: PasswordEncoder,
+    private val personDetailService: PersonDetailService
 ) {
 
 
@@ -37,15 +41,18 @@ class AuthController @Autowired constructor(
 
     @PostMapping("/login")
     suspend fun performLogin(@RequestBody authenticationDto: AuthenticationDto): Map<String, String> {
-        val authInputToken = UsernamePasswordAuthenticationToken(
-            authenticationDto.username, authenticationDto.password
-        )
-        try {
-            authenticationManager.authenticate(authInputToken)
-        } catch (e: BadCredentialsException) {
-            return java.util.Map.of("message", "incorrect credentials")
+        if (passwordEncoder.matches(authenticationDto.password,personDetailService.findByUsername(authenticationDto.username).awaitSingle().password)) {
+            val authInputToken = UsernamePasswordAuthenticationToken(
+                authenticationDto.username, authenticationDto.password
+            )
+            try {
+                authenticationManager.authenticate(authInputToken)
+            } catch (e: BadCredentialsException) {
+                return java.util.Map.of("message", "incorrect credentials")
+            }
+            val token: String = jwtUtil.generateToken(authenticationDto.username)
+            return java.util.Map.of("jwt_token", token)
         }
-        val token: String = jwtUtil.generateToken(authenticationDto.username)
-        return java.util.Map.of("jwt_token", token)
+        else return java.util.Map.of("jwt_token", "error")
     }
 }
